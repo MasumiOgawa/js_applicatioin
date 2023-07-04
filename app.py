@@ -6,7 +6,7 @@ from llama_index import QuestionAnswerPrompt, GPTVectorStoreIndex, SimpleDirecto
 from langchain.chat_models import ChatOpenAI
 import os
 import openai
-openai.api_key = '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'
+openai.api_key = '[YOUR API KEY]'
 os.environ["OPENAI_API_KEY"] = openai.api_key
 
 
