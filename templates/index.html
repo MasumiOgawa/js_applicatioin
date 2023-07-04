@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Chatbot</title>
+    <style>
+    body {
+        font-family: Arial, sans-serif;
+        max-width: 90%;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #2f2f2f;
+    }
+    .top-pic {
+        width: 100%;
+    }
+
+    .title{
+        margin:40px 0 40px 0;
+    }
+    h1{
+        text-align: center;
+        color: #fff;
+        font-size: 30px;
+    }
+    h2{
+        text-align: center;
+        color: #fff;
+        font-size: 30px;
+    }
+    /* 画像エリア */
+    .image-upload-container {
+    margin: auto auto;
+    width: 100%;
+    background-size: 90%;
+    background-image: url("./static/img/flame_g.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 800px;
+    position: relative;
+    display: flex; /* 追加 */
+    justify-content: center; /* 追加 */
+    align-items: center; /* 追加 */
+    text-align: center;
+    color: #fff;
+    font-size: 20px;
+}
+
+    #chat-container {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 10px;
+        margin-bottom: 20px;
+        height: 150px;
+        overflow-y: scroll;
+        background-color: #a9a9a9;
+        border-radius: 20px;
+        /* 新しいスタイル */
+        display: flex;
+        flex-direction: column-reverse;
+        /* 影を入れたいです */
+        box-shadow: 0px 0px 10px #000;
+    }
+
+    #user-message {
+        background-color: #f5f5f5;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+    }
+
+    #bot-message {
+        background-color: #e2e2e2;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+    }
+
+    #input-form {
+        display: flex;
+    }
+
+    #button{
+    /*コレ*/opacity: 0.5;
+    display: block;
+    width: 200px;
+    background: #d0d0d0;
+    border: 2px solid #FFF;
+    padding: 20px;
+    text-align: center;
+    text-decoration: none;
+    color: #FFF;
+    font-size: 120%;
+    font-weight: bold;
+    margin: 40px auto;
+    border-radius: 80px;
+    /* 立体にする */
+    box-shadow: 0px 7px 0px #d0d0d0;
+}
+#button:hover{
+    /*コレ*/opacity: 1;
+    background: #fa8393;
+    color: #FFF;
+    text-decoration: none;
+}
+.mic {
+    width: 60%;
+    height: 60%;
+}
+
+    #user-input {
+        flex-grow: 1;
+        padding: 5px;
+        border-radius: 20px;
+        border: 1px solid #ccc;
+        height: 80px;
+        width: 60%;
+        font-size: 20px;
+    }
+    .file-upload-image {
+        max-width: 60%;
+        max-height: auto;
+        margin: auto;
+        padding: 20px;
+        position: relative;
+        display: flex; /* 追加 */
+        justify-content: center; /* 追加 */
+        align-items: center; /* 追加 */
+    }
+
+    .under-container {
+    position: fixed;
+    bottom:30px ;
+    width: 90%;
+    /* 真ん中 */
+    margin: 0 auto;
+    /* 他のスタイル属性 */
+}
+
+    #submit-button {
+        margin-left: 10px;
+        padding: 5px 10px;
+        border-radius: 4px;
+        border: none;
+        background-color: #007bff;
+        color: #fff;
+        cursor: pointer;
+    }
+    @keyframes shake {
+        0% { transform: translate(1px, 1px) rotate(0deg); }
+        10% { transform: translate(-1px, -2px) rotate(-1deg); }
+        20% { transform: translate(-3px, 0px) rotate(1deg); }
+        30% { transform: translate(3px, 2px) rotate(0deg); }
+        40% { transform: translate(1px, -1px) rotate(1deg); }
+        50% { transform: translate(-1px, 2px) rotate(-1deg); }
+        60% { transform: translate(-3px, 1px) rotate(0deg); }
+        70% { transform: translate(3px, 1px) rotate(-1deg); }
+        80% { transform: translate(-1px, -1px) rotate(1deg); }
+        90% { transform: translate(1px, 2px) rotate(0deg); }
+        100% { transform: translate(1px, -2px) rotate(-1deg); }
+    }
+
+    .shake {
+        animation: shake 1s;
+        animation-iteration-count: infinite;
+    }
+    #chat-container{
+        height: 400px;
+
+    }
+    #bot-message{
+        font-size: 20px;
+    } 
+    #user-message{
+        font-size: 20px;
+    } 
+
+
+    </style>
+
+  <script>
+    function scrollToBottom() {
+        var chatContainer = document.getElementById("chat-container");
+        chatContainer.scrollTop = 0;  // スクロールをトップに移動
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    function isImageSelected() {
+    var fileInput = document.getElementById("image-upload");
+    return fileInput.value !== "";
+}
+    function sendMessage(userInput) {
+        if (userInput.trim() !== ""&& isImageSelected()) {
+            displayUserMessage(userInput);
+            document.getElementById("user-input").value = "";
+
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ "message": userInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayBotMessage(data.reply);
+                scrollToBottom();
+            });
+        } else {
+                alert("画像を選択してね！");
+            }
+    }
+
+    function displayUserMessage(message) {
+        var userMessageElement = document.createElement("div");
+        userMessageElement.id = "user-message";
+        userMessageElement.textContent = message;
+
+        document.getElementById("chat-container").appendChild(userMessageElement);
+    }
+
+    function displayBotMessage(message) {
+        var botMessageElement = document.createElement("div");
+        botMessageElement.id = "bot-message";
+        botMessageElement.textContent = message;
+
+        document.getElementById("chat-container").appendChild(botMessageElement);
+    }
+
+    const recognition = new webkitSpeechRecognition();
+    recognition.lang = "ja-JP";
+
+    recognition.onresult = (event) => {
+        if (event.results.length > 0) {
+            const transcript = event.results[0][0].transcript;
+            // `sendMessage` を呼び出す際に `transcript` を引数として渡す
+            sendMessage(transcript);
+        }
+    };
+
+    recognition.onerror = (event) => {
+        console.error(event.error);
+    };
+
+    function toggleStartStop() {
+    if (isImageSelected()) {
+        if (recognition.running) {
+            recognition.stop();
+        } else {
+            recognition.start();
+        }
+    } else {
+        alert("画像を選択してね！");
+    }
+}
+
+function displayBotMessage(message) {
+    var botMessageElement = document.createElement("div");
+    botMessageElement.id = "bot-message";
+    botMessageElement.textContent = message;
+
+    document.getElementById("chat-container").appendChild(botMessageElement);
+
+    // Text to Speech
+    var speech = new SpeechSynthesisUtterance();
+    speech.text = message;
+    speech.lang = 'ja-JP';
+
+    speech.onstart = function(event) {
+        document.getElementById("selected-image").classList.add("shake");
+    };
+
+    speech.onend = function(event) {
+        document.getElementById("selected-image").classList.remove("shake");
+    };
+
+    window.speechSynthesis.speak(speech);
+}
+
+// 画像を選択した時に呼び出される関数
+function displayImage(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+            // file-upload-imageのsrcに選択した画像をセット
+            document.getElementById('selected-image').src = e.target.result;
+            // file-upload-contentを表示
+            document.querySelector('.file-upload-content').style.display = "block";
+            // image-upload-wrapを非表示に
+            document.querySelector('.image-upload-wrap').style.display = "none";
+        };
+
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        removeUpload();
+    }
+}
+
+function removeUpload() {
+    var input = document.getElementById("image-upload");
+    input.parentNode.replaceChild(input.cloneNode(true), input);
+    // file-upload-contentを非表示に
+    document.querySelector('.file-upload-content').style.display = "none";
+    // image-upload-wrapを表示
+    document.querySelector('.image-upload-wrap').style.display = "block";
+}
+// 
+
+recognition.onstart = () => {
+    document.getElementById("recording-indicator").style.display = "block";
+};
+
+recognition.onend = () => {
+    document.getElementById("recording-indicator").style.display = "none";
+};
+
+</script>
+
+</head>
+<body>
+    <div class = "top-container">
+        <img src="./static/img/animal.png" alt="top Image" class = "top-pic">
+    </div>
+    <div class = "title"></div>
+        <h1>The Mafia Animals Talk</h1>
+        <h2>君だけの相棒と会話して仲を深めよう</h2>
+    </div>
+    <!-- 画像をはめるエリア -->
+    <div class="image-upload-container">
+        <div class="image-upload-wrap">
+            <div class = "select-file">
+                <input class="file-upload-input" id="image-upload" type='file' onchange="displayImage(this);" accept="image/*" />
+            </div>
+            <div class="drag-text">
+                <h3>ここに画像をドラッグ＆ドロップ</h3>
+                <h3>またはクリックして選択してください</h3>
+            </div>
+        </div>
+        <div class="file-upload-content">
+            <img class="file-upload-image" id="selected-image"/>
+        </div>
+    </div>
+    <!--  -->
+    <div class = under-container>
+        <div id="chat-container"></div>
+            <div id="voice-container">
+                <button id="button" onclick="toggleStartStop()"><img src="./static/img/mic_1.png" class = "mic"></button>
+            </div>
+            <div id="input-form">
+                <input type="text" id="user-input" placeholder="Type your message here" autocomplete="off">
+                <button id="submit-button" onclick="sendMessage(document.getElementById('user-input').value)">Send</button>
+            </div>
+    </div>
+   
+    <script>
+        document.getElementById("user-input").addEventListener("keyup", function(event) {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                if (isImageSelected()) {
+                    document.getElementById("submit-button").click();
+                } else {
+                    alert("画像を選択してね！");
+                }
+            }
+        });
+    </script>
+</body>
+</html>
